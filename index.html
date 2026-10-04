@@ -11,4 +11,42 @@ function norm(s){return(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\
 function go(n){for(let i=1;i<=4;i++)document.getElementById("s"+i).classList.toggle("hidden",i!==n);document.getElementById("result").classList.add("hidden")}
 function euro(x){return Math.round(x/500)*500}
 function calc(){if(!firstname.value||!lastname.value||!phone.value||!email.value||!consent.checked){alert("Merci de compléter vos coordonnées et votre accord.");return}let base=prices[norm(city.value)]||prices.default;if(type.value==="Appartement")base*=.96;let f=1;let st=state.value;if(st.includes("Très"))f+=.07;if(st.includes("Travaux"))f-=.08;if(st.includes("rénover"))f-=.16;let d=dpe.value;if(d==="A")f+=.04;if(d==="B")f+=.03;if(d==="E")f-=.04;if(d==="F")f-=.09;if(d==="G")f-=.14;if(garage.checked)f+=.025;if(garden.checked&&type.value==="Maison")f+=.025;if(pool.checked)f+=.025;if(outbuilding.checked)f+=.015;if(basement.checked)f+=.01;let landVal=0;if(type.value==="Maison"&&Number(land.value)>500)landVal=Math.min((Number(land.value)-500)*35,25000);let c=euro(Number(surface.value)*base*f+landVal),lo=euro(c*.92),hi=euro(c*1.08);range.textContent=lo.toLocaleString("fr-FR")+" € à "+hi.toLocaleString("fr-FR")+" €";central.textContent="Valeur indicative centrale : "+c.toLocaleString("fr-FR")+" €";for(let i=1;i<=4;i++)document.getElementById("s"+i).classList.add("hidden");result.classList.remove("hidden")}
-</script></body></html
+const originalCalc=calc;
+calc=function(){
+  originalCalc();
+  if(!result.classList.contains("hidden")){
+    const data={
+      access_key:"d537466e-c374-4580-8353-435e6307cd22",
+      subject:"Nouvelle estimation - Allys Immobilier",
+      "Prénom":firstname.value,
+      "Nom":lastname.value,
+      "Téléphone":phone.value,
+      "Email":email.value,
+      "Adresse":address.value,
+      "Code postal":zip.value,
+      "Commune":city.value,
+      "Type de bien":type.value,
+      "Année":year.value,
+      "Surface":surface.value+" m²",
+      "Terrain":land.value+" m²",
+      "Pièces":rooms.value,
+      "Chambres":beds.value,
+      "DPE":dpe.value,
+      "État":state.value,
+      "Garage / stationnement":garage.checked?"Oui":"Non",
+      "Jardin / extérieur":garden.checked?"Oui":"Non",
+      "Sous-sol / cave":basement.checked?"Oui":"Non",
+      "Dépendance":outbuilding.checked?"Oui":"Non",
+      "Piscine":pool.checked?"Oui":"Non",
+      "Cheminée / poêle":fireplace.checked?"Oui":"Non",
+      "Informations complémentaires":notes.value,
+      "Estimation":range.textContent,
+      "Valeur centrale":central.textContent
+    };
+    fetch("https://api.web3forms.com/submit",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify(data)
+    });
+  }
+};</script></body></html
